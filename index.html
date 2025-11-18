@@ -544,32 +544,36 @@
                     <span>点赞</span>
                     <span class="stats-count">2.9k</span>
                 </div>
+                <div class="interaction-btn" onclick="downloadModel()">
+                    <span>📥</span>
+                    <span>下载模型</span>
+                </div>
             </div>
         </div>
 
         <!-- 关键词卡片 -->
         <div class="card">
             <div class="keywords">
-                <span class="badge">能量</span>
-                <span class="badge">压力</span>
-                <span class="badge">疲惫</span>
-                <span class="badge">控制感</span>
-                <span class="badge">身体反应</span>
-                <span class="badge">逃离</span>
+                <span class="badge">电梯</span>
+                <span class="badge">海浪</span>
+                <span class="badge">未知空间</span>
+                <span class="badge">恐惧</span>
+                <span class="badge">突破</span>
+                <span class="badge">世界入口</span>
             </div>
         </div>
 
         <!-- 梦境描述卡片 -->
         <div class="card">
             <strong>梦境描述</strong>
-            <p class="description">这个梦的画面特别重。我跪在地上，整个人像失去了力气。背后连接着几条粗长的管子，有东西正从我身体里被"抽走"。我想站起来，但是完全动不了，只能低着头撑着地面。梦里我能感受到那种"被掏空"的感觉，不是痛，是一种慢慢被抽离的麻木感。周围没有人，也没有声音，只有自己的呼吸和那种被吸走的感觉。</p>
+            <p class="description">我做了一个很奇怪的梦。我走进一部电梯，本来只是想去楼下，但门一关上，整个空间突然变得异常安静。下一秒，电梯门缓缓打开，一道巨大的蓝色海浪正冲着我卷上来，像是某种"活"的东西，带着光、带着脉动，像是在呼吸。它没有真正拍到我，但我能感觉到一股力量在把我往前拉，好像它想让我进去。我记得自己站在门口不敢动，既害怕又莫名兴奋，就像站在一个全新的世界入口前。</p>
         </div>
 
         <!-- 梦境解析卡片 -->
         <div class="card">
             <strong>梦境解析</strong>
             <div class="analysis">
-                这个梦象征着压力、透支感与情绪能量的流失。跪姿代表无力感、被迫停下或被压制的心理状态。背后的管线象征外界对你的"过度索取"——可能是工作、学业、人际或内在压力。被抽走的"能量"体现一种"情绪耗尽"或"自我边界被侵蚀"的体验。空旷的环境暗示你在某个阶段正独自承受压力，缺乏支持或出口。这个梦提醒你：你需要停下来，把能量收回到自己身上。
+                这个梦象征着转变、压力与潜意识的召唤。电梯通常代表"状态改变"或"内在位置的移动"。海浪象征情绪、潜意识以及无法控制的外部力量。海浪向你"靠近但未淹没"，意味着你正在面对某种巨大的变化，但仍处在可以掌控的边缘。这种既害怕又兴奋的感觉，反映了你对未知领域的期待 —— 很可能与你近期的项目、未来规划或人生选择有关。梦正在推动你向前，让你跨入一个新的阶段。
             </div>
         </div>
 
@@ -588,6 +592,10 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 2000);
+        }
+
+        function downloadModel() {
+            showToast('📥 模型文件获取方式：\n1. 联系作者获取完整 .usdz 文件\n2. 或通过云盘链接下载\n3. 支持AR查看的完整3D模型');
         }
     </script>
 
@@ -687,53 +695,123 @@
         const objLoader = new OBJLoader(loadingManager);
         console.log('开始加载模型...');
 
-        // 优化模型加载
-        fetch('电梯.usdz')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                console.log('文件存在，开始加载模型');
+        // 由于模型文件过大，显示能量抽取3D演示
+        console.log('模型文件过大，显示能量抽取演示');
 
-                // 添加响应缓存
-                const modelCache = localStorage.getItem('elevatorModelCache');
-                if (modelCache) {
-                    console.log('使用缓存的模型数据');
-                    const object = objLoader.parse(modelCache);
-                    setupModel(object);
-                    return;
-                }
+        // 创建跪姿人物
+        const personGeometry = new THREE.BoxGeometry(1, 1.5, 0.8);
+        const personMaterial = new THREE.MeshStandardMaterial({
+            color: 0x666666,
+            metalness: 0.2,
+            roughness: 0.8
+        });
+        const person = new THREE.Mesh(personGeometry, personMaterial);
+        person.position.set(0, 0.5, 0);
+        person.rotation.x = Math.PI / 6; // 跪姿
+        scene.add(person);
 
-                objLoader.load('电梯.usdz',
-                    function (object) {
-                        console.log('模型加载成功！');
+        // 创建能量管线
+        const tubeGeometry = new THREE.CylinderGeometry(0.1, 0.1, 3, 8);
+        const tubeMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ff00,
+            metalness: 0.8,
+            roughness: 0.2,
+            transparent: true,
+            opacity: 0.6
+        });
 
-                        // 缓存模型数据
-                        try {
-                            localStorage.setItem('elevatorModelCache', JSON.stringify(object.toJSON()));
-                        } catch (e) {
-                            console.warn('模型缓存失败:', e);
-                        }
+        // 添加多根管线
+        const tubes = [];
+        for (let i = 0; i < 4; i++) {
+            const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+            const angle = (Math.PI * 2 / 4) * i;
+            tube.position.set(
+                Math.cos(angle) * 0.8,
+                2,
+                Math.sin(angle) * 0.8
+            );
+            tube.lookAt(0, 0, 0);
+            tubes.push(tube);
+            scene.add(tube);
+        }
 
-                        setupModel(object);
-                    },
-                    function (xhr) {
-                        const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
-                        if (progressElement) {
-                            progressElement.textContent = `${percent}%`;
-                        }
-                        console.log(percent + '% 已加载');
-                    },
-                    function (error) {
-                        console.error('加载错误：', error);
-                        alert('❌ 模型加载失败：' + error.message);
-                    }
-                );
-            })
-            .catch(error => {
-                console.error('文件检查失败：', error);
-                alert('❌ 无法找到模型文件，请确保"电梯.usdz"文件在正确的位置');
+        // 创建能量粒子效果
+        const particleCount = 50;
+        const particles = [];
+        const particleGeometry = new THREE.SphereGeometry(0.05, 4, 4);
+
+        for (let i = 0; i < particleCount; i++) {
+            const particleMaterial = new THREE.MeshStandardMaterial({
+                color: 0x00ff00,
+                emissive: 0x00ff00,
+                emissiveIntensity: 0.5
             });
+            const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+            particles.push(particle);
+            scene.add(particle);
+        }
+
+        // 移除测试立方体
+        scene.remove(testCube);
+
+        // 设置相机位置
+        camera.position.set(5, 3, 5);
+        controls.target.set(0, 0.5, 0);
+        controls.update();
+
+        // 添加能量抽取动画
+        function animateExtraction() {
+            const time = Date.now() * 0.001;
+
+            // 管线脉动效果
+            tubes.forEach((tube, i) => {
+                tube.material.opacity = 0.3 + Math.sin(time * 2 + i) * 0.3;
+            });
+
+            // 粒子沿管线移动
+            particles.forEach((particle, i) => {
+                const progress = ((time * 0.5 + i * 0.02) % 1);
+                const tubeIndex = Math.floor(i / (particleCount / 4));
+                const angle = (Math.PI * 2 / 4) * tubeIndex;
+
+                const startY = 2;
+                const endY = 0.5;
+                particle.position.set(
+                    Math.cos(angle) * 0.8,
+                    startY + (endY - startY) * progress,
+                    Math.sin(angle) * 0.8
+                );
+
+                particle.material.opacity = 1 - progress;
+                particle.scale.setScalar(1 - progress * 0.5);
+            });
+
+            // 人物轻微颤抖
+            person.position.x = Math.sin(time * 10) * 0.02;
+            person.position.z = Math.cos(time * 10) * 0.02;
+        }
+
+        // 在动画循环中调用
+        function animate() {
+            frameId = requestAnimationFrame(animate);
+
+            animateExtraction();
+
+            if (controls.enabled && controls.update) {
+                controls.update();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 隐藏加载界面
+        setTimeout(() => {
+            loading.style.display = 'none';
+            document.body.style.cursor = 'default';
+
+            // 显示模型下载提示
+            showToast('📥 模型文件过大，请点击下载按钮获取完整模型');
+        }, 1000);
 
         // 模型设置函数
         function setupModel(object) {
