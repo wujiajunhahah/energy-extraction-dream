@@ -554,26 +554,26 @@
         <!-- 关键词卡片 -->
         <div class="card">
             <div class="keywords">
-                <span class="badge">电梯</span>
-                <span class="badge">海浪</span>
-                <span class="badge">未知空间</span>
-                <span class="badge">恐惧</span>
-                <span class="badge">突破</span>
-                <span class="badge">世界入口</span>
+                <span class="badge">能量抽取</span>
+                <span class="badge">跪地</span>
+                <span class="badge">无力感</span>
+                <span class="badge">潜意识</span>
+                <span class="badge">内心恐惧</span>
+                <span class="badge">自我怀疑</span>
             </div>
         </div>
 
         <!-- 梦境描述卡片 -->
         <div class="card">
             <strong>梦境描述</strong>
-            <p class="description">我做了一个很奇怪的梦。我走进一部电梯，本来只是想去楼下，但门一关上，整个空间突然变得异常安静。下一秒，电梯门缓缓打开，一道巨大的蓝色海浪正冲着我卷上来，像是某种"活"的东西，带着光、带着脉动，像是在呼吸。它没有真正拍到我，但我能感觉到一股力量在把我往前拉，好像它想让我进去。我记得自己站在门口不敢动，既害怕又莫名兴奋，就像站在一个全新的世界入口前。</p>
+            <p class="description">我梦见自己被迫跪在地上，周围有一些模糊的身影在抽取我体内的能量。我能感觉到自己的力量正在流失，身体变得越来越虚弱，想要反抗却使不出力气。这种无力感让我非常恐惧，眼睁睁看着自己被夺走什么却无能为力。整个过程充满了压迫感和绝望，像是某种精神上的掠夺正在发生。</p>
         </div>
 
         <!-- 梦境解析卡片 -->
         <div class="card">
             <strong>梦境解析</strong>
             <div class="analysis">
-                这个梦象征着转变、压力与潜意识的召唤。电梯通常代表"状态改变"或"内在位置的移动"。海浪象征情绪、潜意识以及无法控制的外部力量。海浪向你"靠近但未淹没"，意味着你正在面对某种巨大的变化，但仍处在可以掌控的边缘。这种既害怕又兴奋的感觉，反映了你对未知领域的期待 —— 很可能与你近期的项目、未来规划或人生选择有关。梦正在推动你向前，让你跨入一个新的阶段。
+                这个梦反映了你内心的焦虑和无力感，可能源于现实生活中的压力或自我怀疑。被迫跪地象征着屈服或失控，能量被抽取则代表你感觉自己的精力、自信或资源正在被消耗。这种梦境往往出现在面对重大挑战时，可能是工作压力、人际关系冲突或对未来的不确定感。梦境提醒你需要重新建立自己的边界感，保护自己的能量，找到重新获得控制权的方法。这也是潜意识在提醒你关注自己的心理健康和能量管理。
             </div>
         </div>
 
@@ -602,7 +602,7 @@
     <!-- Three.js 3D 渲染脚本 -->
     <script type="module">
         import * as THREE from 'three';
-        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
         // 创建场景、相机和渲染器
@@ -691,117 +691,147 @@
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         pmremGenerator.compileEquirectangularShader();
 
-        // 创建OBJ加载器
-        const objLoader = new OBJLoader(loadingManager);
-        console.log('开始加载模型...');
+        // 创建GLTF加载器并加载GLB模型
+        const gltfLoader = new GLTFLoader(loadingManager);
+        console.log('开始加载GLB模型...');
 
-        // 由于模型文件过大，显示能量抽取3D演示
-        console.log('模型文件过大，显示能量抽取演示');
+        gltfLoader.load('跪地.glb',
+            function (gltf) {
+                console.log('GLB模型加载成功！');
 
-        // 创建跪姿人物
-        const personGeometry = new THREE.BoxGeometry(1, 1.5, 0.8);
-        const personMaterial = new THREE.MeshStandardMaterial({
-            color: 0x666666,
-            metalness: 0.2,
-            roughness: 0.8
-        });
-        const person = new THREE.Mesh(personGeometry, personMaterial);
-        person.position.set(0, 0.5, 0);
-        person.rotation.x = Math.PI / 6; // 跪姿
-        scene.add(person);
+                const model = gltf.scene;
 
-        // 创建能量管线
-        const tubeGeometry = new THREE.CylinderGeometry(0.1, 0.1, 3, 8);
-        const tubeMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00ff00,
-            metalness: 0.8,
-            roughness: 0.2,
-            transparent: true,
-            opacity: 0.6
-        });
+                // 调整模型大小和位置
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 2 / maxDim;
 
-        // 添加多根管线
-        const tubes = [];
-        for (let i = 0; i < 4; i++) {
-            const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
-            const angle = (Math.PI * 2 / 4) * i;
-            tube.position.set(
-                Math.cos(angle) * 0.8,
-                2,
-                Math.sin(angle) * 0.8
-            );
-            tube.lookAt(0, 0, 0);
-            tubes.push(tube);
-            scene.add(tube);
-        }
+                model.scale.multiplyScalar(scale);
+                model.position.sub(center.multiplyScalar(scale));
+                model.position.y = -0.5; // 确保模型在地面上
 
-        // 创建能量粒子效果
-        const particleCount = 50;
-        const particles = [];
-        const particleGeometry = new THREE.SphereGeometry(0.05, 4, 4);
+                // 添加到场景
+                scene.add(model);
 
-        for (let i = 0; i < particleCount; i++) {
-            const particleMaterial = new THREE.MeshStandardMaterial({
-                color: 0x00ff00,
-                emissive: 0x00ff00,
-                emissiveIntensity: 0.5
-            });
-            const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-            particles.push(particle);
-            scene.add(particle);
-        }
+                // 移除测试立方体
+                scene.remove(testCube);
 
-        // 移除测试立方体
-        scene.remove(testCube);
-
-        // 设置相机位置
-        camera.position.set(5, 3, 5);
-        controls.target.set(0, 0.5, 0);
-        controls.update();
-
-        // 添加能量抽取动画
-        function animateExtraction() {
-            const time = Date.now() * 0.001;
-
-            // 管线脉动效果
-            tubes.forEach((tube, i) => {
-                tube.material.opacity = 0.3 + Math.sin(time * 2 + i) * 0.3;
-            });
-
-            // 粒子沿管线移动
-            particles.forEach((particle, i) => {
-                const progress = ((time * 0.5 + i * 0.02) % 1);
-                const tubeIndex = Math.floor(i / (particleCount / 4));
-                const angle = (Math.PI * 2 / 4) * tubeIndex;
-
-                const startY = 2;
-                const endY = 0.5;
-                particle.position.set(
-                    Math.cos(angle) * 0.8,
-                    startY + (endY - startY) * progress,
-                    Math.sin(angle) * 0.8
-                );
-
-                particle.material.opacity = 1 - progress;
-                particle.scale.setScalar(1 - progress * 0.5);
-            });
-
-            // 人物轻微颤抖
-            person.position.x = Math.sin(time * 10) * 0.02;
-            person.position.z = Math.cos(time * 10) * 0.02;
-        }
-
-        // 在动画循环中调用
-        function animate() {
-            frameId = requestAnimationFrame(animate);
-
-            animateExtraction();
-
-            if (controls.enabled && controls.update) {
+                // 设置相机位置
+                camera.position.set(5, 2, 5);
+                controls.target.set(0, 0.5, 0);
                 controls.update();
+
+                // 添加旋转动画
+                function animateModel() {
+                    const time = Date.now() * 0.001;
+                    model.rotation.y += 0.005;
+
+                    // 轻微的上下浮动
+                    model.position.y = -0.5 + Math.sin(time * 2) * 0.1;
+                }
+
+                // 在动画循环中调用
+                function animate() {
+                    frameId = requestAnimationFrame(animate);
+
+                    animateModel();
+
+                    if (controls.enabled && controls.update) {
+                        controls.update();
+                    }
+
+                    renderer.render(scene, camera);
+                }
+            },
+            function (xhr) {
+                const percent = (xhr.loaded / xhr.total * 100).toFixed(0);
+                if (progressElement) {
+                    progressElement.textContent = `${percent}%`;
+                }
+                console.log(percent + '% 已加载');
+            },
+            function (error) {
+                console.error('GLB模型加载错误：', error);
+                alert('❌ GLB模型加载失败：' + error.message);
+
+                // 如果加载失败，显示立方体演示
+                createFallbackModel();
+            }
+        );
+
+        // 备用演示模型
+        function createFallbackModel() {
+            console.log('显示立方体演示');
+
+            // 创建舞台地板
+            const stageGeometry = new THREE.BoxGeometry(8, 0.2, 6);
+            const stageMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b4513,
+                metalness: 0.3,
+                roughness: 0.8
+            });
+            const stage = new THREE.Mesh(stageGeometry, stageMaterial);
+            stage.position.y = -1;
+            scene.add(stage);
+
+            // 创建两个表演者立方体
+            const performerGeometry = new THREE.BoxGeometry(1, 2, 1);
+
+            // Kanye (红色)
+            const kanyeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xff0000,
+                metalness: 0.4,
+                roughness: 0.3
+            });
+            const kanyeCube = new THREE.Mesh(performerGeometry, kanyeMaterial);
+            kanyeCube.position.set(-2, 0, 0);
+            scene.add(kanyeCube);
+
+            // 用户 (蓝色)
+            const userMaterial = new THREE.MeshStandardMaterial({
+                color: 0x00ccff,
+                metalness: 0.4,
+                roughness: 0.3
+            });
+            const userCube = new THREE.Mesh(performerGeometry, userMaterial);
+            userCube.position.set(2, 0, 0);
+            scene.add(userCube);
+
+            // 移除测试立方体
+            scene.remove(testCube);
+
+            // 设置相机位置
+            camera.position.set(8, 4, 8);
+            controls.target.set(0, 0, 0);
+            controls.update();
+
+            // 添加表演动画
+            function animatePerformance() {
+                const time = Date.now() * 0.001;
+
+                // Kanye 动作
+                kanyeCube.position.y = Math.abs(Math.sin(time * 2)) * 0.5;
+                kanyeCube.rotation.y = time * 0.5;
+
+                // 用户动作
+                userCube.position.y = Math.abs(Math.cos(time * 2)) * 0.3;
+                userCube.rotation.y = -time * 0.3;
             }
 
-            renderer.render(scene, camera);
+            // 在动画循环中调用
+            function animate() {
+                frameId = requestAnimationFrame(animate);
+
+                animatePerformance();
+
+                if (controls.enabled && controls.update) {
+                    controls.update();
+                }
+
+                renderer.render(scene, camera);
+            }
         }
 
         // 隐藏加载界面
